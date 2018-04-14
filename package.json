@@ -1,0 +1,18 @@
+{
+  "name": "demo_chatapp",
+  "version": "1.0.0",
+  "description": "sample chat application",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "Indrasis Datta",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "express": "^4.16.3",
+    "mongoose": "^5.0.10",
+    "socket.io": "^2.0.4"
+  }
+}

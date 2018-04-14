@@ -1,0 +1,96 @@
+<html>
+    <title>Demo chat app</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
+    <div class="container">
+        <br>
+        <div class="jumbotron">
+            <h1 class="dispaly-4">Start Chatting</h1>
+            <input type="hidden" id="txtName" value="">
+            <br>
+            <textarea id="txtMessage" class="form-control" placeholder="Message"></textarea>
+            <br>
+            <button id="send" class="btn btn-success">Send</button>
+        </div>
+        <div id="messages"></div>
+        <p class='typing'></p>
+        <div id="notification"></div>
+    </div>
+
+    <script type="text/javascript">
+
+        name = window.prompt("Enter your name");
+
+        if (name == null) {
+            $("body").html("Please refresh the page and try again ");
+        }
+
+        $('#txtName').val(name);
+
+        $(() => {
+
+            getChats();
+
+            /* POST chat data when a chat is entered */
+
+            $('#send').click(() => {
+                var chatMessage = {
+                    name: $('#txtName').val(),
+                    chat: $('#txtMessage').val()
+                };
+                // postChat(chatMessage);
+
+                socket.emit('chat message', chatMessage);
+                $('#txtMessage').val('');
+            });
+
+            socket.on('chat message', function(chatObj) {
+                addChat(chatObj);
+            });
+
+            socket.on('new_user_connected', function(data) {
+                $('#notification').append('<div class="text-success"><strong>' + data.msg +  '</div>');
+            });
+
+            socket.on('user_disconnected', function(data) {
+               $('#notification').append('<div class="text-danger"><strong>' + data.msg +  '</div>')
+            });
+
+            /* User typing message */
+
+            $('#txtMessage').keyup(function() {
+                socket.emit('typing', {name: $('#txtName').val()});
+            });
+
+            socket.on('typing', function(data) {
+                $(".typing").html(data.name + " is typing");
+                setTimeout(function () {
+                    $(".typing").html('');
+                }, 2000);
+            });
+            
+        });
+
+        var socket = io();
+
+        socket.on('chat', addChat);
+
+        function postChat(chat) {
+            $.post("http://localhost:3020/chats", chat);
+        }
+
+        function getChats() {
+             $.get("/chats", (chats) => {
+                chats.forEach(addChat);
+             })
+        }
+
+        function addChat(chatObj) {
+            console.log(chatObj);
+            $("#messages").append('<h5>' + chatObj.name + '</h5><p>' + chatObj.chat + '</p>');
+        }        
+    </script>
+</html>
